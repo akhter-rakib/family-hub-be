@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8083
   servlet:
     context-path: /api
 
@@ -8,7 +8,7 @@ spring:
     name: family-hub
 
   datasource:
-    url: jdbc:mysql://localhost:3306/familyhub?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3307/familyhub?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: familyhub
     password: familyhub123
     driver-class-name: com.mysql.cj.jdbc.Driver

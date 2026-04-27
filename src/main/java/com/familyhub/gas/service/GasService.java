@@ -36,19 +36,40 @@ public class GasService {
 
         PurchaseRecord purchase = null;
         if (request.getPurchaseId() != null) {
-            purchase = purchaseRepository.findById(request.getPurchaseId()).orElse(null);
+            purchase = purchaseRepository.findById(request.getPurchaseId())
+                    .orElseThrow(() -> new ResourceNotFoundException("PurchaseRecord", "id", request.getPurchaseId()));
         }
 
         GasUsageLog gasLog = GasUsageLog.builder()
                 .familyId(familyId)
-                .startDate(request.getStartDate())
-                .cost(request.getCost())
+                .startDate(request.getStartDate() != null ? request.getStartDate() : LocalDate.now())
+                .cost(purchase != null ? purchase.getCost() : null)
                 .purchase(purchase)
                 .note(request.getNote())
                 .build();
 
         gasLog = gasRepository.save(gasLog);
         log.info("Gas usage started for family: {}", familyId);
+        return toDto(gasLog);
+    }
+
+    @Transactional
+    public GasUsageDto updateGasUsage(UUID familyId, UUID gasId, UpdateGasRequest request) {
+        familyService.validateMembership(familyId);
+
+        GasUsageLog gasLog = gasRepository.findById(gasId)
+                .orElseThrow(() -> new ResourceNotFoundException("GasUsageLog", "id", gasId));
+
+        if (request.getStartDate() != null) gasLog.setStartDate(request.getStartDate());
+        if (request.getNote() != null) gasLog.setNote(request.getNote());
+
+        // Recalculate daysUsed if finished and startDate changed
+        if ("FINISHED".equals(gasLog.getStatus()) && gasLog.getEndDate() != null) {
+            gasLog.setDaysUsed((int) ChronoUnit.DAYS.between(gasLog.getStartDate(), gasLog.getEndDate()));
+        }
+
+        gasLog = gasRepository.save(gasLog);
+        log.info("Gas log updated: {} for family: {}", gasId, familyId);
         return toDto(gasLog);
     }
 
@@ -73,6 +94,21 @@ public class GasService {
                 .map(this::toDto).toList();
     }
 
+    public List<AvailableCylinderDto> getAvailableCylinders(UUID familyId) {
+        familyService.validateMembership(familyId);
+        return purchaseRepository.findAvailableGasCylinders(familyId).stream()
+                .map(pr -> AvailableCylinderDto.builder()
+                        .purchaseId(pr.getId())
+                        .itemName(pr.getItem().getName())
+                        .cost(pr.getCost())
+                        .purchaseDate(pr.getPurchaseDate())
+                        .shopName(pr.getShopName())
+                        .purchasedByName(pr.getPurchasedBy().getFirstName())
+                        .note(pr.getNote())
+                        .build())
+                .toList();
+    }
+
     private GasUsageDto toDto(GasUsageLog g) {
         return GasUsageDto.builder()
                 .id(g.getId())
@@ -83,6 +119,8 @@ public class GasService {
                 .cost(g.getCost())
                 .status(g.getStatus())
                 .purchaseId(g.getPurchase() != null ? g.getPurchase().getId() : null)
+                .purchaseItemName(g.getPurchase() != null ? g.getPurchase().getItem().getName() : null)
+                .purchaseShopName(g.getPurchase() != null ? g.getPurchase().getShopName() : null)
                 .note(g.getNote())
                 .createdAt(g.getCreatedAt())
                 .build();

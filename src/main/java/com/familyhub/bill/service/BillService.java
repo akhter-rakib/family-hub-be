@@ -10,6 +10,7 @@ import com.familyhub.common.security.SecurityUtils;
 import com.familyhub.family.service.FamilyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,6 +60,27 @@ public class BillService {
     }
 
     @Transactional
+    public BillDto updateBill(UUID familyId, UUID billId, UpdateBillRequest request) {
+        familyService.validateMembership(familyId);
+
+        Bill bill = billRepository.findById(billId)
+                .orElseThrow(() -> new ResourceNotFoundException("Bill", "id", billId));
+
+        if (request.getTitle() != null) bill.setTitle(request.getTitle());
+        if (request.getBillType() != null) bill.setBillType(request.getBillType());
+        if (request.getAmount() != null) bill.setAmount(request.getAmount());
+        if (request.getDueDate() != null) bill.setDueDate(request.getDueDate());
+        if (request.getRecurring() != null) bill.setRecurring(request.getRecurring());
+        if (request.getRecurrenceInterval() != null) bill.setRecurrenceInterval(request.getRecurrenceInterval());
+        if (request.getNote() != null) bill.setNote(request.getNote());
+
+        bill = billRepository.save(bill);
+        log.info("Bill updated: {} for family: {}", bill.getTitle(), familyId);
+        return toDto(bill);
+    }
+
+    @Transactional
+    @CacheEvict(value = "dashboard", key = "#familyId")
     public BillDto markPaid(UUID familyId, UUID billId) {
         familyService.validateMembership(familyId);
 

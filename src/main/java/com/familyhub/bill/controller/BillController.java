@@ -42,6 +42,14 @@ public class BillController {
         return ResponseEntity.ok(ApiResponse.success(billService.getOverdueBills(familyId)));
     }
 
+    @PatchMapping("/{billId}")
+    @Operation(summary = "Update a bill")
+    public ResponseEntity<ApiResponse<BillDto>> update(
+            @PathVariable UUID familyId, @PathVariable UUID billId,
+            @Valid @RequestBody UpdateBillRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Bill updated", billService.updateBill(familyId, billId, request)));
+    }
+
     @PatchMapping("/{billId}/pay")
     @Operation(summary = "Mark bill as paid")
     public ResponseEntity<ApiResponse<BillDto>> markPaid(

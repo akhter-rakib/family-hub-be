@@ -21,6 +21,7 @@ import com.familyhub.shopping.entity.ShoppingStatus;
 import com.familyhub.shopping.repository.ShoppingRequestRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +44,7 @@ public class PurchaseService {
     private final EventPublisher eventPublisher;
 
     @Transactional
+    @CacheEvict(value = "dashboard", key = "#familyId")
     public PurchaseDto createPurchase(UUID familyId, CreatePurchaseRequest request) {
         familyService.validateMembership(familyId);
         UUID userId = SecurityUtils.getCurrentUserId();

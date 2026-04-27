@@ -23,6 +23,8 @@ public class GasUsageDto {
     private BigDecimal cost;
     private String status;
     private UUID purchaseId;
+    private String purchaseItemName;
+    private String purchaseShopName;
     private String note;
     private LocalDateTime createdAt;
 }

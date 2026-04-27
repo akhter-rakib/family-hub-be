@@ -40,4 +40,13 @@ public interface PurchaseRepository extends JpaRepository<PurchaseRecord, UUID> 
            "WHERE pr.familyId = :familyId AND pr.purchaseDate BETWEEN :start AND :end " +
            "GROUP BY pr.purchasedBy.firstName")
     List<Object[]> sumCostByMemberAndDateRange(UUID familyId, LocalDate start, LocalDate end);
+
+    // Gas cylinder purchases not yet linked to any GasUsageLog
+    @Query("SELECT pr FROM PurchaseRecord pr JOIN FETCH pr.item i JOIN FETCH i.category c " +
+           "JOIN FETCH pr.unit JOIN FETCH pr.purchasedBy " +
+           "WHERE pr.familyId = :familyId " +
+           "AND LOWER(c.name) = 'gas' " +
+           "AND pr.id NOT IN (SELECT g.purchase.id FROM GasUsageLog g WHERE g.purchase IS NOT NULL) " +
+           "ORDER BY pr.purchaseDate DESC")
+    List<PurchaseRecord> findAvailableGasCylinders(UUID familyId);
 }

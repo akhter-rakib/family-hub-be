@@ -184,6 +184,11 @@ public class ShoppingService {
             throw new BadRequestException("Request does not belong to this family");
         }
 
+        // Block edits on completed items
+        if (sr.getStatus() == ShoppingStatus.BOUGHT || sr.getStatus() == ShoppingStatus.NOT_AVAILABLE) {
+            throw new BadRequestException("Cannot edit a completed shopping request");
+        }
+
         if (update.getStatus() != null) {
             sr.setStatus(update.getStatus());
 
@@ -198,6 +203,28 @@ public class ShoppingService {
             User assignee = userRepository.findById(update.getAssignedTo())
                     .orElseThrow(() -> new ResourceNotFoundException("User", "id", update.getAssignedTo()));
             sr.setAssignedTo(assignee);
+        }
+
+        if (update.getQuantity() != null) {
+            sr.setQuantity(update.getQuantity());
+            // Recalculate normalized quantity
+            if (sr.getUnit().getConversionFactor() != null) {
+                sr.setNormalizedQuantity(update.getQuantity().multiply(sr.getUnit().getConversionFactor()));
+            }
+        }
+
+        if (update.getUnitId() != null) {
+            Unit unit = catalogService.getUnitEntity(update.getUnitId());
+            sr.setUnit(unit);
+            // Recalculate normalized quantity with new unit
+            BigDecimal qty = update.getQuantity() != null ? update.getQuantity() : sr.getQuantity();
+            if (unit.getConversionFactor() != null) {
+                sr.setNormalizedQuantity(qty.multiply(unit.getConversionFactor()));
+            }
+        }
+
+        if (update.getNote() != null) {
+            sr.setNote(update.getNote());
         }
 
         sr = shoppingRepo.save(sr);

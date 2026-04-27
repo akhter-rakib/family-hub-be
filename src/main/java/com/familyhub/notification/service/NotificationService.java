@@ -18,6 +18,7 @@ import java.util.UUID;
 public class NotificationService {
 
     private final NotificationRepository notificationRepo;
+    private final SseEmitterService sseEmitterService;
 
     public void createNotification(UUID userId, UUID familyId, String type, String message) {
         Notification notification = Notification.builder()
@@ -28,6 +29,9 @@ public class NotificationService {
                 .build();
         notificationRepo.save(notification);
         log.debug("Notification created for user {}: {}", userId, type);
+
+        // Push real-time SSE event to the connected user
+        sseEmitterService.sendToUser(userId, "notification", toDto(notification));
     }
 
     public List<NotificationDto> getMyNotifications() {

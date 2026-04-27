@@ -50,6 +50,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
+        // Fallback: token from query param (for SSE EventSource which can't set headers)
+        String tokenParam = request.getParameter("token");
+        if (StringUtils.hasText(tokenParam)) {
+            return tokenParam;
+        }
         return null;
     }
 }

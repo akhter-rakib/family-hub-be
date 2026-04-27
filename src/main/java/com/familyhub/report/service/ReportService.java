@@ -90,7 +90,9 @@ public class ReportService {
         int totalMembers = memberRepo.findActiveMembersByFamilyId(familyId).size();
         int pendingRequests = shoppingRepo.findByFamilyIdAndStatus(familyId, ShoppingStatus.PENDING).size();
         int overdueBills = billRepo.findByFamilyIdAndPaidFalseAndDueDateBeforeOrderByDueDateAsc(familyId, now).size();
-        BigDecimal monthlySpending = purchaseRepo.sumCostByFamilyIdAndDateRange(familyId, monthStart, now);
+        BigDecimal monthlyPurchases = purchaseRepo.sumCostByFamilyIdAndDateRange(familyId, monthStart, now);
+        BigDecimal monthlyBills = billRepo.sumPaidBillsByDateRange(familyId, monthStart, now);
+        BigDecimal monthlySpending = monthlyPurchases.add(monthlyBills);
         int lowStockItems = inventoryRepo.findLowStock(familyId).size();
         int unreadNotifications = (int) notificationRepo.countUnreadByUserId(userId);
 
