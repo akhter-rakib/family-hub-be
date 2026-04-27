@@ -1,0 +1,99 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: family-hub
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/familyhub?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: familyhub
+    password: familyhub123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        type:
+          preferred_uuid_jdbc_type: VARCHAR
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 5000
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: familyhub
+    password: familyhub123
+
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+app:
+  jwt:
+    secret: "dGhpcyBpcyBhIHZlcnkgc2VjcmV0IGtleSBmb3IgZmFtaWx5IGh1YiBhcHBsaWNhdGlvbiB0aGF0IG11c3QgYmUgYXQgbGVhc3QgMjU2IGJpdHM="
+    access-token-expiration: 900000      # 15 minutes
+    refresh-token-expiration: 604800000  # 7 days
+
+  cors:
+    allowed-origins: "http://localhost:5173"
+
+  cache:
+    units-ttl: 3600        # 1 hour
+    categories-ttl: 3600   # 1 hour
+    items-ttl: 1800        # 30 minutes
+    dashboard-ttl: 300     # 5 minutes
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  level:
+    com.familyhub: INFO
+    org.springframework.security: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{correlationId}] %-5level %logger{36} - %msg%n"

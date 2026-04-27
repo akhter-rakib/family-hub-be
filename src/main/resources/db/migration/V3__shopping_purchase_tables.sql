@@ -1,0 +1,51 @@
+-- V3: Shopping and Purchase tables
+
+CREATE TABLE shopping_requests (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    family_id VARCHAR(36) NOT NULL,
+    item_id VARCHAR(36) NOT NULL,
+    quantity DECIMAL(10,3) NOT NULL,
+    unit_id VARCHAR(36) NOT NULL,
+    normalized_quantity DECIMAL(15,6),
+    status ENUM('PENDING','ACCEPTED','BOUGHT','PARTIAL','NOT_AVAILABLE','CANCELLED') NOT NULL DEFAULT 'PENDING',
+    priority INT DEFAULT 0,
+    due_date DATE,
+    note VARCHAR(500),
+    requested_by VARCHAR(36) NOT NULL,
+    assigned_to VARCHAR(36),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (family_id) REFERENCES families(id),
+    FOREIGN KEY (item_id) REFERENCES items(id),
+    FOREIGN KEY (unit_id) REFERENCES units(id),
+    FOREIGN KEY (requested_by) REFERENCES users(id),
+    FOREIGN KEY (assigned_to) REFERENCES users(id),
+    INDEX idx_sr_family (family_id),
+    INDEX idx_sr_status (family_id, status),
+    INDEX idx_sr_assigned (assigned_to, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE purchase_records (
+    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    family_id VARCHAR(36) NOT NULL,
+    item_id VARCHAR(36) NOT NULL,
+    quantity DECIMAL(10,3) NOT NULL,
+    unit_id VARCHAR(36) NOT NULL,
+    normalized_quantity DECIMAL(15,6),
+    cost DECIMAL(12,2) NOT NULL,
+    shop_name VARCHAR(100),
+    purchase_date DATE NOT NULL,
+    receipt_url VARCHAR(500),
+    note VARCHAR(500),
+    purchased_by VARCHAR(36) NOT NULL,
+    shopping_request_id VARCHAR(36),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (family_id) REFERENCES families(id),
+    FOREIGN KEY (item_id) REFERENCES items(id),
+    FOREIGN KEY (unit_id) REFERENCES units(id),
+    FOREIGN KEY (purchased_by) REFERENCES users(id),
+    FOREIGN KEY (shopping_request_id) REFERENCES shopping_requests(id),
+    INDEX idx_pr_family (family_id),
+    INDEX idx_pr_date (family_id, purchase_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
