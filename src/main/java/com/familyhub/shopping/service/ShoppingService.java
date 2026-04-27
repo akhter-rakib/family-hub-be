@@ -56,7 +56,7 @@ public class ShoppingService {
 
         // Resolve or create item
         Item item = resolveItem(familyId, request);
-        Unit unit = catalogService.getUnitEntity(request.getUnitId());
+        Unit unit = resolveDefaultUnit(item, request.getUnitId());
         BigDecimal normalizedQty = normalizeQuantity(request.getQuantity(), unit);
 
         User requester = userRepository.findById(userId).orElseThrow();
@@ -237,6 +237,16 @@ public class ShoppingService {
             return quantity.multiply(unit.getConversionFactor());
         }
         return quantity;
+    }
+
+    private Unit resolveDefaultUnit(Item item, UUID unitId) {
+        if (unitId != null) {
+            return catalogService.getUnitEntity(unitId);
+        }
+        if (item.getDefaultUnit() != null) {
+            return item.getDefaultUnit();
+        }
+        throw new BadRequestException("Unit must be specified if no default unit is set for the item.");
     }
 
     private ShoppingRequestDto toDto(ShoppingRequest sr) {
