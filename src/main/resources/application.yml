@@ -77,6 +77,10 @@ app:
     items-ttl: 1800        # 30 minutes
     dashboard-ttl: 300     # 5 minutes
 
+  desco:
+    account-no: "20061119"
+    meter-no: "661120242337"
+
 springdoc:
   api-docs:
     path: /api-docs
