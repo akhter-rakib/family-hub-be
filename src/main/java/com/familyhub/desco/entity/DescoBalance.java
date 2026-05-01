@@ -35,6 +35,6 @@ public class DescoBalance extends BaseEntity {
     @Column(name = "fetched_at", nullable = false)
     private LocalDateTime fetchedAt;
 
-    @Column(name = "family_id", nullable = false, length = 36)
+    @Column(name = "family_id", length = 36)
     private UUID familyId;
 }

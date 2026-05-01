@@ -4,7 +4,6 @@ import com.familyhub.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -27,10 +26,4 @@ public class DescoConfig extends BaseEntity {
     @Column(name = "enabled", nullable = false)
     @Builder.Default
     private boolean enabled = true;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
 }
